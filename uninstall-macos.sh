@@ -1,16 +1,24 @@
 #!/usr/bin/env bash
 # =============================================================================
 # OpenClaw / Clawdbot Uninstaller — macOS
-# Usage: bash uninstall-macos.sh [--keep-config]
+# Usage: bash uninstall-macos.sh [--keep-config | --purge]
 #   --keep-config   Skip deleting ~/.openclaw and ~/.clawdbot (keep your data)
+#   --purge         Delete config dirs immediately, no backup
 # =============================================================================
 
 set -euo pipefail
 
 KEEP_CONFIG=false
+PURGE=false
 for arg in "$@"; do
   [[ "$arg" == "--keep-config" ]] && KEEP_CONFIG=true
+  [[ "$arg" == "--purge" ]]       && PURGE=true
 done
+
+if $KEEP_CONFIG && $PURGE; then
+  echo "Error: --keep-config and --purge are mutually exclusive."
+  exit 1
+fi
 
 RED='\033[0;31m'; YELLOW='\033[1;33m'; GREEN='\033[0;32m'; BOLD='\033[1m'; NC='\033[0m'
 info()    { echo -e "${BOLD}[INFO]${NC}  $*"; }
@@ -65,6 +73,13 @@ done
 # ── Step 4: Remove config directories ────────────────────────────────────────
 if [ "$KEEP_CONFIG" = true ]; then
   warn "Step 4/5  --keep-config set, skipping config directory removal."
+elif [ "$PURGE" = true ]; then
+  warn "Step 4/5  --purge set, deleting config directories WITHOUT backup..."
+  for dir in "$HOME/.openclaw" "$HOME/.clawdbot" "$HOME/.moltbot"; do
+    if [ -d "$dir" ]; then
+      rm -rf "$dir" && success "Purged: $dir"
+    fi
+  done
 else
   info "Step 4/5  Backing up and removing config directories..."
   BACKUP_DATE=$(date +%Y%m%d_%H%M%S)

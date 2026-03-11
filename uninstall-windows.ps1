@@ -1,15 +1,22 @@
 # =============================================================================
 # OpenClaw / Clawdbot Uninstaller — Windows (PowerShell)
 # Run in PowerShell as normal user (no admin required)
-# Usage: .\uninstall-windows.ps1 [-KeepConfig]
+# Usage: .\uninstall-windows.ps1 [-KeepConfig | -Purge]
 #   -KeepConfig   Skip deleting config directories (keep your data)
+#   -Purge        Delete config dirs immediately, no backup
 #
 # NOTE: If running inside WSL2, use uninstall-linux.sh instead.
 # =============================================================================
 
 param(
-    [switch]$KeepConfig
+    [switch]$KeepConfig,
+    [switch]$Purge
 )
+
+if ($KeepConfig -and $Purge) {
+    Write-Host "Error: -KeepConfig and -Purge are mutually exclusive." -ForegroundColor Red
+    exit 1
+}
 
 $ErrorActionPreference = "Continue"
 
@@ -77,15 +84,18 @@ foreach ($pkg in $packages) {
 # ── Step 4: Remove config directories ────────────────────────────────────────
 if ($KeepConfig) {
     Warn "Step 4/5  -KeepConfig set, skipping config directory removal."
+} elseif ($Purge) {
+    Warn "Step 4/5  -Purge set, deleting config directories WITHOUT backup..."
+    foreach ($dir in @("$env:USERPROFILE\.openclaw","$env:USERPROFILE\.clawdbot","$env:USERPROFILE\.moltbot")) {
+        if (Test-Path $dir) {
+            Remove-Item -Recurse -Force -Path $dir -ErrorAction SilentlyContinue
+            Success "Purged: $dir"
+        }
+    }
 } else {
     Info "Step 4/5  Backing up and removing config directories..."
     $backupDate = Get-Date -Format "yyyyMMdd_HHmmss"
-    $configDirs = @(
-        "$env:USERPROFILE\.openclaw",
-        "$env:USERPROFILE\.clawdbot",
-        "$env:USERPROFILE\.moltbot"
-    )
-    foreach ($dir in $configDirs) {
+    foreach ($dir in @("$env:USERPROFILE\.openclaw","$env:USERPROFILE\.clawdbot","$env:USERPROFILE\.moltbot")) {
         if (Test-Path $dir) {
             $backup = "${dir}-backup-${backupDate}"
             Copy-Item -Recurse -Path $dir -Destination $backup -ErrorAction SilentlyContinue

@@ -7,7 +7,7 @@ Each script will:
 - Stop and remove the daemon (LaunchAgent / systemd / Scheduled Task)
 - Kill any remaining gateway processes
 - Uninstall npm global packages (`openclaw` / `clawdbot` / `moltbot`)
-- **Auto-backup** config directories before deleting (`~/.openclaw-backup-<timestamp>`)
+- Auto-backup config directories before deleting (default), or purge without backup (`--purge`)
 - Clean up crontab / PATH entries
 - Print a colored verification summary at the end
 
@@ -34,6 +34,12 @@ bash uninstall-macos.sh
 bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-macos.sh) --keep-config
 ```
 
+### Purge (delete immediately, no backup)
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-macos.sh) --purge
+```
+
 ---
 
 ## 🐧 Linux
@@ -57,6 +63,12 @@ bash uninstall-linux.sh
 bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-linux.sh) --keep-config
 ```
 
+### Purge (delete immediately, no backup)
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-linux.sh) --purge
+```
+
 ---
 
 ## 🪟 Windows (WSL2)
@@ -65,6 +77,12 @@ Run inside the WSL2 shell — use the Linux script:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-linux.sh)
+```
+
+Purge mode:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/memoryza/uninstall-openclaw/main/uninstall-linux.sh) --purge
 ```
 
 ---
@@ -91,13 +109,23 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (I
 .\uninstall-windows.ps1 -KeepConfig
 ```
 
+### Purge (delete immediately, no backup)
+
+```powershell
+.\uninstall-windows.ps1 -Purge
+```
+
 ---
 
 ## Options
 
-| Option | macOS / Linux | Windows |
-|--------|--------------|---------|
-| Keep config dirs | `--keep-config` | `-KeepConfig` |
+| Option | macOS / Linux | Windows | Description |
+|--------|--------------|---------|-------------|
+| Default | _(no flag)_ | _(no flag)_ | Auto-backup config dirs, then delete |
+| Keep config | `--keep-config` | `-KeepConfig` | Skip deleting config dirs entirely |
+| Purge | `--purge` | `-Purge` | Delete config dirs immediately, **no backup** |
+
+> `--keep-config` and `--purge` are mutually exclusive.
 
 ---
 
